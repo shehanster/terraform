@@ -28,3 +28,17 @@ type File struct {
 	// State is the actual state represented by this file.
 	State *states.State
 }
+
+// DeepCopy is a convenience method to create a new File object whose state
+// is a deep copy of the receiver's, as implemented by states.State.DeepCopy.
+func (f *File) DeepCopy() *File {
+	if f == nil {
+		return nil
+	}
+	return &File{
+		TerraformVersion: f.TerraformVersion,
+		Serial:           f.Serial,
+		Lineage:          f.Lineage,
+		State:            f.State.DeepCopy(),
+	}
+}

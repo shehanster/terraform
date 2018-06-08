@@ -318,8 +318,13 @@ func writeStateV4(file *File, w io.Writer) tfdiags.Diagnostics {
 
 	var diags tfdiags.Diagnostics
 
+	var terraformVersion string
+	if file.TerraformVersion != nil {
+		terraformVersion = file.TerraformVersion.String()
+	}
+
 	sV4 := &stateV4{
-		TerraformVersion: file.TerraformVersion.String(),
+		TerraformVersion: terraformVersion,
 		Serial:           file.Serial,
 		Lineage:          file.Lineage,
 		RootOutputs:      map[string]outputStateV4{},
@@ -425,7 +430,7 @@ func writeStateV4(file *File, w io.Writer) tfdiags.Diagnostics {
 
 	sV4.normalize()
 
-	src, err := json.Marshal(sV4)
+	src, err := json.MarshalIndent(sV4, "", "  ")
 	if err != nil {
 		// Shouldn't happen if we do our conversion to *stateV4 correctly above.
 		diags = diags.Append(tfdiags.Sourceless(
@@ -435,6 +440,7 @@ func writeStateV4(file *File, w io.Writer) tfdiags.Diagnostics {
 		))
 		return diags
 	}
+	src = append(src, '\n')
 
 	_, err = w.Write(src)
 	if err != nil {
